@@ -5,8 +5,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.courseplatform.course_api.dto.CourseDetailResponse;
 import com.courseplatform.course_api.dto.CourseSummaryResponse;
+import com.courseplatform.course_api.dto.SubtopicResponse;
+import com.courseplatform.course_api.dto.TopicResponse;
 import com.courseplatform.course_api.model.Course;
+import com.courseplatform.course_api.model.Subtopic;
+import com.courseplatform.course_api.model.Topic;
 import com.courseplatform.course_api.repository.CourseRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +22,7 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
 
+    // 🔹 GET /api/courses
     public List<CourseSummaryResponse> getAllCourses() {
         List<Course> courses = courseRepository.findAll();
 
@@ -32,5 +38,43 @@ public class CourseService {
                         : 0)
                 .build()
         ).collect(Collectors.toList());
+    }
+
+    // 🔹 GET /api/courses/{id}
+    public CourseDetailResponse getCourseById(String courseId) {
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
+        List<TopicResponse> topicResponses = course.getTopics().stream()
+                .map(this::mapTopic)
+                .collect(Collectors.toList());
+
+        return new CourseDetailResponse(
+                course.getId(),
+                course.getTitle(),
+                course.getDescription(),
+                topicResponses
+        );
+    }
+
+    private TopicResponse mapTopic(Topic topic) {
+        List<SubtopicResponse> subtopics = topic.getSubtopics().stream()
+                .map(this::mapSubtopic)
+                .collect(Collectors.toList());
+
+        return new TopicResponse(
+                topic.getId(),
+                topic.getTitle(),
+                subtopics
+        );
+    }
+
+    private SubtopicResponse mapSubtopic(Subtopic subtopic) {
+        return new SubtopicResponse(
+                subtopic.getId(),
+                subtopic.getTitle(),
+                subtopic.getContent()
+        );
     }
 }
