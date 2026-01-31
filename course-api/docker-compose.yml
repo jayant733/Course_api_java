@@ -1,0 +1,27 @@
+
+
+# Using official Postgres image
+# DB name = course_platform
+# Username = postgres
+# Password = postgres
+# Port 5432 exposed so Spring Boot can connect
+# Volume keeps data safe even if container restarts
+
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: course_platform_db
+    restart: always
+    environment:
+      POSTGRES_DB: course_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
