@@ -1,10 +1,12 @@
 package com.courseplatform.course_api.service;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.courseplatform.course_api.dto.EnrollmentResponse;
+import com.courseplatform.course_api.dto.UserEnrollmentResponse;
 import com.courseplatform.course_api.model.Course;
 import com.courseplatform.course_api.model.Enrollment;
 import com.courseplatform.course_api.model.User;
@@ -52,4 +54,22 @@ public class EnrollmentService {
                 .courseTitle(course.getTitle())
                 .build();
     }
+
+    public List<UserEnrollmentResponse> getUserEnrollments(Long userId) {
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    return enrollmentRepository.findByUser(user)
+            .stream()
+            .map(enrollment -> UserEnrollmentResponse.builder()
+                    .enrollmentId(enrollment.getId())
+                    .enrolledAt(enrollment.getEnrolledAt())
+                    .courseId(enrollment.getCourse().getId())
+                    .courseTitle(enrollment.getCourse().getTitle())
+                    .build()
+            )
+            .toList();
+}
+
 }
