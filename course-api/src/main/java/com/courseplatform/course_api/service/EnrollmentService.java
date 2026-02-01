@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import org.springframework.stereotype.Service;
 
+import com.courseplatform.course_api.dto.EnrollmentResponse;
 import com.courseplatform.course_api.model.Course;
 import com.courseplatform.course_api.model.Enrollment;
 import com.courseplatform.course_api.model.User;
@@ -21,7 +22,7 @@ public class EnrollmentService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
-    public Enrollment enrollUser(Long userId, String courseId) {
+    public EnrollmentResponse enrollUser(Long userId, String courseId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -41,6 +42,14 @@ public class EnrollmentService {
                 .enrolledAt(Instant.now())
                 .build();
 
-        return enrollmentRepository.save(enrollment);
+        Enrollment saved = enrollmentRepository.save(enrollment);
+
+        // 🔥 Return SAFE DTO instead of entity
+        return EnrollmentResponse.builder()
+                .enrollmentId(saved.getId())
+                .enrolledAt(saved.getEnrolledAt())
+                .courseId(course.getId())
+                .courseTitle(course.getTitle())
+                .build();
     }
 }

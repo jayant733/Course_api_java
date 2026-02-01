@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "topics")
 @Getter
@@ -14,13 +16,13 @@ import java.util.List;
 public class Topic {
 
     @Id
-    private String id; // e.g. "kinematics"
+    private String id;
 
-    @Column(nullable = false)
     private String title;
 
     @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "course_id")
+    @JsonIgnore   // ⛔ prevents Topic → Course loop
     private Course course;
 
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)

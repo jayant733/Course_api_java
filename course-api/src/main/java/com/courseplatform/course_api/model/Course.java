@@ -3,6 +3,7 @@ package com.courseplatform.course_api.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "courses")
@@ -14,7 +15,7 @@ import java.util.List;
 public class Course {
 
     @Id
-    private String id; // e.g. "physics-101"
+    private String id;
 
     @Column(nullable = false)
     private String title;
@@ -22,9 +23,11 @@ public class Course {
     @Column(length = 2000)
     private String description;
 
+    // KEEP topics visible (we need them for DTO mapping)
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Topic> topics;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Enrollment> enrollments;
 }
