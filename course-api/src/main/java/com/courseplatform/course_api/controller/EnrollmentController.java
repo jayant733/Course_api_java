@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.courseplatform.course_api.dto.EnrollmentResponse;
-import com.courseplatform.course_api.model.Enrollment;
+
 import com.courseplatform.course_api.service.EnrollmentService;
 
 import lombok.RequiredArgsConstructor;

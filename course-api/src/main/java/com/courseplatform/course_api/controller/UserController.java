@@ -10,10 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.courseplatform.course_api.dto.UserEnrollmentResponse;
 import com.courseplatform.course_api.model.User;
+import com.courseplatform.course_api.service.EnrollmentService;
 import com.courseplatform.course_api.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -21,14 +24,13 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    private final EnrollmentService enrollmentService;
 
     // 🔹 Create new user
     @PostMapping
     public User createUser(@RequestBody Map<String, String> body) {
-
         String email = body.get("email");
         String password = body.get("password");
-
         return userService.createUser(email, password);
     }
 
@@ -42,5 +44,11 @@ public class UserController {
     @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+
+    // 🔹 Student Dashboard — Enrolled Courses
+    @GetMapping("/{id}/enrollments")
+    public List<UserEnrollmentResponse> getUserEnrollments(@PathVariable Long id) {
+        return enrollmentService.getUserEnrollments(id);
     }
 }
