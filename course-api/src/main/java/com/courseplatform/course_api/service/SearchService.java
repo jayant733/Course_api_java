@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.courseplatform.course_api.dto.SearchCourseResultResponse;
 import com.courseplatform.course_api.dto.SearchMatchResponse;
 import com.courseplatform.course_api.dto.SearchResponse;
+import com.courseplatform.course_api.exception.BadRequestException;
 import com.courseplatform.course_api.model.Subtopic;
 import com.courseplatform.course_api.repository.SubtopicRepository;
 
@@ -23,9 +24,12 @@ public class SearchService {
 
     public SearchResponse search(String query) {
 
+        if (query == null || query.trim().isEmpty()) {
+            throw new BadRequestException("Search query must not be empty");
+        }
+
         List<Subtopic> subtopics = subtopicRepository.searchSubtopics(query);
 
-        // Group matches by course
         Map<String, SearchCourseResultResponse> groupedResults = new HashMap<>();
 
         for (Subtopic sub : subtopics) {

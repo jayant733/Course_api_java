@@ -9,6 +9,7 @@ import com.courseplatform.course_api.dto.CourseDetailResponse;
 import com.courseplatform.course_api.dto.CourseSummaryResponse;
 import com.courseplatform.course_api.dto.SubtopicResponse;
 import com.courseplatform.course_api.dto.TopicResponse;
+import com.courseplatform.course_api.exception.ResourceNotFoundException;
 import com.courseplatform.course_api.model.Course;
 import com.courseplatform.course_api.model.Subtopic;
 import com.courseplatform.course_api.model.Topic;
@@ -22,7 +23,6 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
 
-    // 🔹 GET /api/courses
     public List<CourseSummaryResponse> getAllCourses() {
         List<Course> courses = courseRepository.findAll();
 
@@ -40,11 +40,10 @@ public class CourseService {
         ).collect(Collectors.toList());
     }
 
-    // 🔹 GET /api/courses/{id}
     public CourseDetailResponse getCourseById(String courseId) {
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
 
         List<TopicResponse> topicResponses = course.getTopics().stream()
                 .map(this::mapTopic)

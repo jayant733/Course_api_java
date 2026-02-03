@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.courseplatform.course_api.dto.EnrollmentResponse;
 import com.courseplatform.course_api.dto.UserEnrollmentResponse;
+import com.courseplatform.course_api.exception.BadRequestException;
+import com.courseplatform.course_api.exception.ResourceNotFoundException;
 import com.courseplatform.course_api.model.Course;
 import com.courseplatform.course_api.model.Enrollment;
 import com.courseplatform.course_api.model.User;
@@ -24,18 +26,17 @@ public class EnrollmentService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
-    // ✅ Enroll LOGGED-IN user
     public EnrollmentResponse enrollUser(String email, String courseId) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
 
         enrollmentRepository.findByUserAndCourse(user, course)
                 .ifPresent(e -> {
-                    throw new RuntimeException("User already enrolled in this course");
+                    throw new BadRequestException("User already enrolled in this course");
                 });
 
         Enrollment enrollment = Enrollment.builder()
@@ -54,11 +55,10 @@ public class EnrollmentService {
                 .build();
     }
 
-    // ✅ Dashboard — My Enrollments
     public List<UserEnrollmentResponse> getMyEnrollments(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         return enrollmentRepository.findByUser(user)
                 .stream()

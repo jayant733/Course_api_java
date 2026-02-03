@@ -4,11 +4,12 @@ import java.time.Instant;
 
 import org.springframework.stereotype.Service;
 
+import com.courseplatform.course_api.exception.BadRequestException;
+import com.courseplatform.course_api.exception.ResourceNotFoundException;
 import com.courseplatform.course_api.model.Subtopic;
 import com.courseplatform.course_api.model.SubtopicProgress;
 import com.courseplatform.course_api.model.User;
 import com.courseplatform.course_api.repository.SubTopicProgressRepository;
-
 import com.courseplatform.course_api.repository.SubtopicRepository;
 import com.courseplatform.course_api.repository.UserRepository;
 
@@ -25,15 +26,14 @@ public class ProgressService {
     public void markSubtopicCompleted(Long userId, String subtopicId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         Subtopic subtopic = subtopicRepository.findById(subtopicId)
-                .orElseThrow(() -> new RuntimeException("Subtopic not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Subtopic not found with id: " + subtopicId));
 
-        // Prevent duplicate progress
         progressRepository.findByUserAndSubtopic(user, subtopic)
                 .ifPresent(p -> {
-                    throw new RuntimeException("Subtopic already completed");
+                    throw new BadRequestException("Subtopic already completed");
                 });
 
         SubtopicProgress progress = SubtopicProgress.builder()
