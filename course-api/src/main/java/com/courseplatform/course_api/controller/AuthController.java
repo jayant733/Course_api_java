@@ -1,8 +1,13 @@
 package com.courseplatform.course_api.controller;
 
-import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
-import com.courseplatform.course_api.dto.LoginRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.courseplatform.course_api.model.User;
 import com.courseplatform.course_api.repository.UserRepository;
 import com.courseplatform.course_api.security.JwtUtil;
@@ -16,17 +21,23 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+public String login(@RequestBody Map<String, String> body) {
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    String email = body.get("email");
+    String password = body.get("password");
 
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Invalid password");
-        }
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        return jwtUtil.generateToken(user.getEmail());
+    // 🔥 Compare raw password with hashed one
+    if (!passwordEncoder.matches(password, user.getPassword())) {
+        throw new RuntimeException("Invalid email or password");
     }
+
+    return jwtUtil.generateToken(email);
+}
+
 }

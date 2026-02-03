@@ -24,15 +24,15 @@ public class EnrollmentService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
-    public EnrollmentResponse enrollUser(Long userId, String courseId) {
+    // ✅ Enroll LOGGED-IN user
+    public EnrollmentResponse enrollUser(String email, String courseId) {
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
-        // Prevent duplicate enrollment
         enrollmentRepository.findByUserAndCourse(user, course)
                 .ifPresent(e -> {
                     throw new RuntimeException("User already enrolled in this course");
@@ -46,7 +46,6 @@ public class EnrollmentService {
 
         Enrollment saved = enrollmentRepository.save(enrollment);
 
-        // 🔥 Return SAFE DTO instead of entity
         return EnrollmentResponse.builder()
                 .enrollmentId(saved.getId())
                 .enrolledAt(saved.getEnrolledAt())
@@ -55,21 +54,21 @@ public class EnrollmentService {
                 .build();
     }
 
-    public List<UserEnrollmentResponse> getUserEnrollments(Long userId) {
+    // ✅ Dashboard — My Enrollments
+    public List<UserEnrollmentResponse> getMyEnrollments(String email) {
 
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    return enrollmentRepository.findByUser(user)
-            .stream()
-            .map(enrollment -> UserEnrollmentResponse.builder()
-                    .enrollmentId(enrollment.getId())
-                    .enrolledAt(enrollment.getEnrolledAt())
-                    .courseId(enrollment.getCourse().getId())
-                    .courseTitle(enrollment.getCourse().getTitle())
-                    .build()
-            )
-            .toList();
-}
-
+        return enrollmentRepository.findByUser(user)
+                .stream()
+                .map(enrollment -> UserEnrollmentResponse.builder()
+                        .enrollmentId(enrollment.getId())
+                        .enrolledAt(enrollment.getEnrolledAt())
+                        .courseId(enrollment.getCourse().getId())
+                        .courseTitle(enrollment.getCourse().getTitle())
+                        .build()
+                )
+                .toList();
+    }
 }

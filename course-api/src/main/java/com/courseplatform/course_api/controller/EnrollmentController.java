@@ -1,12 +1,13 @@
 package com.courseplatform.course_api.controller;
 
+import java.security.Principal;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.courseplatform.course_api.dto.EnrollmentResponse;
-
 import com.courseplatform.course_api.service.EnrollmentService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,11 +19,10 @@ public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
 
+    // ✅ Enroll logged-in user
     @PostMapping
-public EnrollmentResponse enroll(
-        @RequestParam Long userId,
-        @RequestParam String courseId) {
-    return enrollmentService.enrollUser(userId, courseId);
+public EnrollmentResponse enroll(@RequestParam String courseId, Principal principal) {
+    return enrollmentService.enrollUser(principal.getName(), courseId);
 }
-
+    
 }
