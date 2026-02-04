@@ -132,9 +132,11 @@ DTOs to avoid entity exposure
 Global exception handler for consistent API responses
 
 📸 API Screenshots
-🔹 Swagger UI Documentation
 
-🔹 Sample API Response
+![Swagger UI](course-api/screenshots/image.png)
+
+
+![API Response](course-api/screenshots/image-1.png)
 
 👨‍💻 Author
 
