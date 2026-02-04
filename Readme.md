@@ -143,9 +143,10 @@ Backend Developer (Spring Boot)
 ## 📸 API Screenshots
 
 ### 🔹 Swagger UI Documentation
+
 ![Swagger UI](image.png)
 
 ### 🔹 Sample API Response
-![API Response](image-1.png)
 
+![API Response](image-1.png)
 
