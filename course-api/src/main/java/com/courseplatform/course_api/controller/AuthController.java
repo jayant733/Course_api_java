@@ -37,7 +37,7 @@ public String login(@RequestBody Map<String, String> body) {
         throw new RuntimeException("Invalid email or password");
     }
 
-    return jwtUtil.generateToken(email);
+    return jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 }
 
 }

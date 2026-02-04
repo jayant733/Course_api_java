@@ -2,6 +2,7 @@ package com.courseplatform.course_api.controller;
 
 import java.security.Principal;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,10 +20,10 @@ public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
 
-    // ✅ Enroll logged-in user
+    // 👤 USER ONLY
     @PostMapping
-public EnrollmentResponse enroll(@RequestParam String courseId, Principal principal) {
-    return enrollmentService.enrollUser(principal.getName(), courseId);
-}
-    
+    @PreAuthorize("hasRole('USER')")
+    public EnrollmentResponse enroll(@RequestParam String courseId, Principal principal) {
+        return enrollmentService.enrollUser(principal.getName(), courseId);
+    }
 }

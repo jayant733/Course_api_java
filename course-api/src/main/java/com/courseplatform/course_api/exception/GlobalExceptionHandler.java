@@ -1,6 +1,5 @@
 package com.courseplatform.course_api.exception;
 
-
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -8,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,26 +29,34 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        String errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+
+        return new ResponseEntity<>(
+                new ErrorResponse(errors, HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    // 🔥 FIXED: Don't intercept Swagger / OpenAPI endpoints
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) throws Exception {
+
+        String path = request.getRequestURI();
+
+        // Let Swagger handle its own errors
+        if (path.contains("/v3/api-docs") || path.contains("/swagger-ui")) {
+            throw ex;
+        }
+
         return new ResponseEntity<>(
                 new ErrorResponse("Something went wrong. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR.value()),
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
-
-    
-@ExceptionHandler(MethodArgumentNotValidException.class)
-public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-    String errors = ex.getBindingResult()
-            .getFieldErrors()
-            .stream()
-            .map(err -> err.getField() + ": " + err.getDefaultMessage())
-            .collect(Collectors.joining(", "));
-
-    return new ResponseEntity<>(
-            new ErrorResponse(errors, HttpStatus.BAD_REQUEST.value()),
-            HttpStatus.BAD_REQUEST
-    );
-}
 }

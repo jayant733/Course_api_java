@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.courseplatform.course_api.exception.BadRequestException;
 import com.courseplatform.course_api.exception.ResourceNotFoundException;
+import com.courseplatform.course_api.model.Role;
 import com.courseplatform.course_api.model.User;
 import com.courseplatform.course_api.repository.UserRepository;
 
@@ -28,6 +29,7 @@ public class UserService {
         User user = User.builder()
                 .email(email)
                 .password(passwordEncoder.encode(password))
+                .role(Role.ROLE_USER)
                 .build();
 
         return userRepository.save(user);

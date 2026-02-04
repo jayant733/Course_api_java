@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +23,9 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    // 🔹 GET /api/courses
+    // 👤 USER + 👑 ADMIN
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public Map<String, List<CourseSummaryResponse>> getAllCourses() {
 
         List<CourseSummaryResponse> courses = courseService.getAllCourses();
@@ -34,12 +36,10 @@ public class CourseController {
         return response;
     }
 
-    // 🔹 GET /api/courses/{courseId}
+    // 👤 USER + 👑 ADMIN
     @GetMapping("/{courseId}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public CourseDetailResponse getCourseById(@PathVariable String courseId) {
         return courseService.getCourseById(courseId);
     }
 }
-
-// GET /api/courses → list view (summary)
-// GET /api/courses/{courseId} → full course structure with markdown content
