@@ -34,7 +34,7 @@ This API uses **JWT-based authentication**.
 | USER | Browse courses, enroll, track progress |
 | ADMIN | Create courses and manage platform |
 
-Security Features:
+### Security Features
 - Password hashing using **BCrypt**
 - Stateless JWT authentication
 - Role-based route protection
@@ -46,9 +46,9 @@ Security Features:
 ## 📦 API Features Implemented
 
 ### 👤 Authentication
-- Register user
-- Login user (returns JWT)
-- Role stored inside JWT
+- Register user  
+- Login user (returns JWT)  
+- Role stored inside JWT  
 
 ### 📚 Courses
 - View all courses (summary)
@@ -85,17 +85,20 @@ Security Features:
 
 ## ⚙️ Local Setup Instructions
 
-### 1️⃣ Clone Repo
+### 1️⃣ Clone the Repository
+
 ```bash
 git clone https://github.com/yourusername/course-platform-api.git
 cd course-platform-api
-
-
-
 mvn spring-boot:run -Dspring-boot.run.profiles=local
-http://localhost:8080/swagger-ui.html
-docker-compose up --build
+```
 
+http://localhost:8080/swagger-ui.html
+
+```bash 
+docker-compose up --build
+``` 
+Deployment
 
 The application is deployed on Render using:
 
@@ -118,7 +121,7 @@ Edge cases handled with custom exceptions
 I focused on building a real-world backend architecture rather than just CRUD APIs.
 Security, clean error handling, scalable structure, and deployability were prioritized.
 
-Key decisions:
+Key Decisions
 
 JWT over sessions for scalability
 
@@ -128,25 +131,12 @@ DTOs to avoid entity exposure
 
 Global exception handler for consistent API responses
 
+📸 API Screenshots
+🔹 Swagger UI Documentation
+
+🔹 Sample API Response
 
 👨‍💻 Author
 
 Jayant Sharma
 Backend Developer (Spring Boot)
-
-
-
-####)\
-
----
-
-## 📸 API Screenshots
-
-### 🔹 Swagger UI Documentation
-
-![Swagger UI](image.png)
-
-### 🔹 Sample API Response
-
-![API Response](image-1.png)
-
