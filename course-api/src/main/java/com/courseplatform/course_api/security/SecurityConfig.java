@@ -14,41 +14,46 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableMethodSecurity // 🔥 Enables @PreAuthorize
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
             .authorizeHttpRequests(auth -> auth
 
-                // ✅ Public endpoints
+                // 🌍 Public endpoints
                 .requestMatchers(
+                        "/",
                         "/api/auth/**",
                         "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/swagger-ui.html"
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**"
                 ).permitAll()
 
-                // 🔐 ADMIN only endpoints
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // 🔐 Admin only
+                .requestMatchers("/api/admin/**")
+                .hasRole("ADMIN")
 
-                // 👤 USER or ADMIN
-                .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
+                // 👤 User + Admin
+                .requestMatchers("/api/**")
+                .hasAnyRole("USER", "ADMIN")
 
-                // Everything else blocked
+                // Everything else
                 .anyRequest().authenticated()
             )
-
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
