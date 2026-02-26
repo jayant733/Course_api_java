@@ -39,8 +39,8 @@ public class User {
     private List<SubtopicProgress> progressRecords;
 
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
-    private Role role = Role.ROLE_USER;
+   @Column(nullable = false)
+@Enumerated(EnumType.STRING)
+private Role role = Role.ROLE_USER;
+
 }
