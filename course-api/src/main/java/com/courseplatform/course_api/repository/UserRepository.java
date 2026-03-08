@@ -6,7 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.courseplatform.course_api.model.User;
 
+
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByEmail(String email);
-    
+
+    Optional<User> findByEmailAndDeletedFalse(String email);
+
+    boolean existsByEmailAndDeletedFalse(String email);
 }

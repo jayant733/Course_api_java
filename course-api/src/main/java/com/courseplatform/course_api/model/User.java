@@ -1,19 +1,23 @@
 package com.courseplatform.course_api.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.ArrayList;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,25 +26,45 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-
-    @JsonIgnore
     @Column(nullable = false)
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    // Prevents infinite JSON loop
-    @JsonIgnore
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Enrollment> enrollments;
+    private List<Enrollment> enrollments = new ArrayList<>();
 
-    // Prevents infinite JSON loop
-    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SubtopicProgress> progressRecords;
+    private List<SubtopicProgress> progressRecords = new ArrayList<>();
 
+    protected User() {}
 
-   @Column(nullable = false)
-@Enumerated(EnumType.STRING)
-private Role role = Role.ROLE_USER;
+    private User(String email, String password, Role role) {
+        this.email = Objects.requireNonNull(email);
+        this.password = Objects.requireNonNull(password);
+        this.role = role;
+    }
 
+    public static User createUser(String email, String encodedPassword) {
+        return new User(email, encodedPassword, Role.ROLE_USER);
+    }
+
+    public static User createAdmin(String email, String encodedPassword) {
+        return new User(email, encodedPassword, Role.ROLE_ADMIN);
+    }
+
+    public Long getId() { return id; }
+    public String getEmail() { return email; }
+    public String getPassword() { return password; }
+    public Role getRole() { return role; }
+
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
+    public void softDelete() {
+        this.markDeleted();
+    }
 }

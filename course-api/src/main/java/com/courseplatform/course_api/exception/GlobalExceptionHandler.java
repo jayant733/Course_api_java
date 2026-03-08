@@ -1,62 +1,64 @@
 package com.courseplatform.course_api.exception;
 
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // =============================
+    // Not Found
+    // =============================
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value()),
-                HttpStatus.NOT_FOUND
-        );
+    public ResponseEntity<?> handleNotFound(ResourceNotFoundException ex) {
+
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
-        return new ResponseEntity<>(
-                new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
-                HttpStatus.BAD_REQUEST
-        );
+    // =============================
+    // Already Exists
+    // =============================
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<?> handleAlreadyExists(ResourceAlreadyExistsException ex) {
+
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        String errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .collect(Collectors.joining(", "));
+    // =============================
+    // Illegal Argument
+    // =============================
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException ex) {
 
-        return new ResponseEntity<>(
-                new ErrorResponse(errors, HttpStatus.BAD_REQUEST.value()),
-                HttpStatus.BAD_REQUEST
-        );
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // 🔥 FIXED: Don't intercept Swagger / OpenAPI endpoints
+    // =============================
+    // Fallback
+    // =============================
+   
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) throws Exception {
+public ResponseEntity<?> handleGeneric(Exception ex) {
+    ex.printStackTrace();
+    return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+}
+    // =============================
+    // Common Builder
+    // =============================
+    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
 
-        String path = request.getRequestURI();
-
-        // Let Swagger handle its own errors
-        if (path.contains("/v3/api-docs") || path.contains("/swagger-ui")) {
-            throw ex;
-        }
-
-        return new ResponseEntity<>(
-                new ErrorResponse("Something went wrong. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR.value()),
-                HttpStatus.INTERNAL_SERVER_ERROR
+        Map<String, Object> body = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", status.value(),
+                "error", status.getReasonPhrase(),
+                "message", message
         );
+
+        return new ResponseEntity<>(body, status);
     }
 }
