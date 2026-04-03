@@ -6,11 +6,15 @@ import ProtectedRoute from "./ProtectedRouter";
 const Landing = lazy(() => import("../pages/Landing"));
 const Login = lazy(() => import("../pages/Login"));
 const Register = lazy(() => import("../pages/Register"));
+const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("../pages/ResetPassword"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const AllCourses = lazy(() => import("../pages/AllCourses"));
 const MyCourses = lazy(() => import("../pages/MyCourses"));
 const CourseDetail = lazy(() => import("../pages/CourseDetail"));
 const Search = lazy(() => import("../pages/Search"));
+const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
+const AccountSettings = lazy(() => import("../pages/AccountSettings"));
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +30,14 @@ export const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
 
   {
@@ -55,6 +67,14 @@ export const router = createBrowserRouter([
       {
         path: "/search",
         element: <Search />,
+      },
+      {
+        path: "/admin",
+        element: <AdminDashboard />,
+      },
+      {
+        path: "/settings",
+        element: <AccountSettings />,
       },
     ],
   },

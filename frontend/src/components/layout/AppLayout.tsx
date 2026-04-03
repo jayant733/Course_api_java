@@ -1,36 +1,25 @@
+import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import React from "react";
 import Header from "./Header";
-
-/**
- * Main application layout
- * Protects routes and renders shared UI (Header)
- */
+import { getSession } from "../../services/sessionService";
 
 const AppLayout: React.FC = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const session = getSession();
 
   useEffect(() => {
-    /**
-     * Redirect to login if user is not authenticated
-     */
-    if (!token) {
+    if (!session.token) {
       navigate("/login", { replace: true });
     }
-  }, [token, navigate]);
+  }, [navigate, session.token]);
 
-  /**
-   * Prevent layout rendering if user is not authenticated
-   */
-  if (!token) return null;
+  if (!session.token) return null;
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-white">
+    <div className="app-shell thin-scrollbar">
       <Header />
-
-      <main className="px-10 py-8">
+      <main className="mx-auto w-full max-w-[1440px] px-4 pb-16 pt-6 sm:px-6 lg:px-10">
         <Outlet />
       </main>
     </div>

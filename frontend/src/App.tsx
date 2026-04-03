@@ -20,9 +20,9 @@ export default App;
  */
 function AppLoader() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-pulse text-lg text-slate-400">
-        Loading application...
+    <div className="flex min-h-screen items-center justify-center bg-[#050505]">
+      <div className="glass-panel rounded-[28px] px-8 py-6 text-sm uppercase tracking-[0.3em] text-[var(--accent-soft)]">
+        Loading learning workspace
       </div>
     </div>
   );

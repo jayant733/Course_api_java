@@ -1,124 +1,79 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/layout/AuthLayout";
+import { loginUser, persistAuthResponse } from "../services/authService";
 
- import { loginUser } from "../services/authService";
+const fieldClass =
+  "w-full rounded-[20px] border border-[var(--workspace-line)] bg-white px-5 py-4 text-sm text-[var(--workspace-text)] outline-none transition placeholder:text-[var(--workspace-muted)] focus:border-[var(--workspace-primary)]/40";
+
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-
-  const [loading, setLoading] = useState<boolean>(false);
-
   const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  /**
-   * Handle login
-   */
-  const handleLogin = useCallback(async () => {
-    if (!email || !password) {
-      alert("Please enter email and password");
+  const handleSubmit = async () => {
+    if (!form.email || !form.password) {
+      setError("Enter both email and password.");
       return;
     }
 
     try {
       setLoading(true);
-
-     
-
-const res = await loginUser(email, password);
-
-      /**
-       * Backend returns plain token string
-       */
-      const token: string = res.data.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("userEmail", email);
-
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Login failed", error);
-      alert("Invalid credentials");
+      setError("");
+      const response = await loginUser(form.email, form.password);
+      const payload = response.data?.data;
+      persistAuthResponse(payload);
+      navigate(payload.role === "ROLE_ADMIN" ? "/admin" : "/dashboard", { replace: true });
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? "Login failed. Check your credentials.");
     } finally {
       setLoading(false);
     }
-  }, [email, password, navigate]);
+  };
 
   return (
     <AuthLayout
-      title="Welcome Back"
-      subtitle="Login to continue learning"
+      title="Welcome back"
+      subtitle="Secure JWT access, role-based routing, and a polished workspace waiting behind the login wall."
       footer={
         <>
-          Don’t have an account?{" "}
-          <Link
-            to="/register"
-            className="text-purple-400 hover:underline"
-          >
-            Register
+          Need an account?{" "}
+          <Link to="/register" className="text-[var(--workspace-primary)] hover:text-[var(--workspace-violet)]">
+            Create one here
+          </Link>
+          {" • "}
+          <Link to="/forgot-password" className="text-[var(--workspace-primary)] hover:text-[var(--workspace-violet)]">
+            Forgot password
           </Link>
         </>
       }
     >
-      {/* Email */}
       <input
         type="email"
+        value={form.email}
+        onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
         placeholder="Email address"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="
-          w-full
-          mb-4
-          p-3
-          rounded-lg
-          bg-black/30
-          border border-white/10
-          focus:outline-none
-          focus:ring-2
-          focus:ring-purple-500
-        "
+        className={fieldClass}
       />
-
-      {/* Password */}
       <input
         type="password"
+        value={form.password}
+        onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
         placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="
-          w-full
-          mb-6
-          p-3
-          rounded-lg
-          bg-black/30
-          border border-white/10
-          focus:outline-none
-          focus:ring-2
-          focus:ring-purple-500
-        "
+        className={fieldClass}
       />
 
-      {/* Login Button */}
-      <button
-        onClick={handleLogin}
-        disabled={loading}
-        className="
-          w-full
-          py-3
-          rounded-lg
-          bg-gradient-to-r
-          from-purple-600
-          to-indigo-600
-          hover:opacity-90
-          transition-all
-          duration-200
-          font-semibold
-          disabled:opacity-50
-        "
-      >
-        {loading ? "Logging in..." : "Login"}
-      </button>
+      {error && <div className="rounded-[18px] border border-red-300/40 bg-red-50 px-4 py-3 text-sm text-red-500">{error}</div>}
 
+      <button
+        type="button"
+        onClick={handleSubmit}
+        disabled={loading}
+        className="w-full rounded-full bg-[var(--workspace-primary)] px-5 py-4 text-sm font-semibold uppercase tracking-[0.22em] text-white transition hover:scale-[1.01] disabled:opacity-60"
+      >
+        {loading ? "Signing in..." : "Enter workspace"}
+      </button>
     </AuthLayout>
   );
 };

@@ -16,4 +16,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     @EntityGraph(attributePaths = {"course"})
     List<Enrollment> findByUser(User user);
+
+    @EntityGraph(attributePaths = {"user", "course"})
+    List<Enrollment> findByDeletedFalse();
 }

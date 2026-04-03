@@ -65,6 +65,16 @@ public class CourseServiceImpl implements CourseService  {
                 .toList();
     }
 
+    @Override
+    public List<CourseSummaryResponse> searchCatalog(String keyword, String topic) {
+        return courseRepository.searchCatalog(
+                        keyword == null || keyword.isBlank() ? null : keyword,
+                        topic == null || topic.isBlank() ? null : topic)
+                .stream()
+                .map(CourseMapper::toSummary)
+                .toList();
+    }
+
     // =============================
     // Create Course
     // =============================

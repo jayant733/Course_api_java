@@ -71,16 +71,60 @@ public class EnrollmentService {
     // GET MY ENROLLMENTS
     // =========================================
     public List<UserEnrollmentResponse> getMyEnrollments(String email) {
+        return getEnrollmentsForUser(getUserByEmail(email));
+    }
+
+    public List<UserEnrollmentResponse> getUserEnrollments(Long userId) {
+        User user = userRepository.findById(userId)
+                .filter(existing -> !existing.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        return getEnrollmentsForUser(user);
+    }
+
+    public List<UserEnrollmentResponse> getAllActiveEnrollments() {
+        return enrollmentRepository.findByDeletedFalse()
+                .stream()
+                .filter(enrollment -> !enrollment.getUser().isDeleted())
+                .filter(enrollment -> !enrollment.getCourse().isDeleted())
+                .map(enrollment ->
+                        UserEnrollmentResponse.builder()
+                                .enrollmentId(enrollment.getId())
+                                .enrolledAt(enrollment.getEnrolledAt())
+                                .courseId(enrollment.getCourse().getId())
+                                .courseTitle(enrollment.getCourse().getTitle())
+                                .build())
+                .toList();
+    }
+
+    @Transactional
+    public void unenrollUser(Long userId, String courseId) {
+        User user = userRepository.findById(userId)
+                .filter(existing -> !existing.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        Course course = courseRepository.findByIdAndDeletedFalse(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+
+        Enrollment enrollment = enrollmentRepository.findByUserAndCourse(user, course)
+                .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+
+        enrollment.markDeleted();
+    }
+
+    private User getUserByEmail(String email) {
 
         User user = userRepository.findByEmailAndDeletedFalse(email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("User not found with email: " + email));
 
+        return user;
+    }
+
+    private List<UserEnrollmentResponse> getEnrollmentsForUser(User user) {
         return enrollmentRepository.findByUser(user)
                 .stream()
-                // 1️⃣ Filter soft-deleted enrollments
                 .filter(enrollment -> !enrollment.isDeleted())
-                // 2️⃣ Filter enrollments whose course is deleted
                 .filter(enrollment -> !enrollment.getCourse().isDeleted())
                 .map(enrollment ->
                         UserEnrollmentResponse.builder()

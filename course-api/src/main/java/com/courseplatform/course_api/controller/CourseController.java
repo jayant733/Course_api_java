@@ -27,15 +27,25 @@ public class CourseController {
     @GetMapping
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<ApiResponse<List<CourseSummaryResponse>>> getCourses(
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String topic) {
 
         List<CourseSummaryResponse> courses =
-                (keyword == null || keyword.isBlank())
+                (keyword == null || keyword.isBlank()) && (topic == null || topic.isBlank())
                         ? courseService.getAllCourses()
-                        : courseService.searchCourses(keyword);
+                        : courseService.searchCatalog(keyword, topic);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(true, courses, "Courses fetched successfully")
+        );
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<ApiResponse<List<CourseSummaryResponse>>> searchCourses(
+            @RequestParam("keyword") String keyword) {
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, courseService.searchCourses(keyword), "Course search completed successfully")
         );
     }
 

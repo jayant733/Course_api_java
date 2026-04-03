@@ -3,11 +3,19 @@ import axios, {
   AxiosError,
   InternalAxiosRequestConfig
 } from "axios";
+import { clearSession, getSession, saveSession } from "../services/sessionService";
 
 /**
  * Axios instance
  */
 const API: AxiosInstance = axios.create({
+  baseURL: "http://localhost:8080/api",
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+
+const REFRESH_CLIENT = axios.create({
   baseURL: "http://localhost:8080/api",
   headers: {
     "Content-Type": "application/json"
@@ -20,7 +28,7 @@ const API: AxiosInstance = axios.create({
  */
 API.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
+    const { token } = getSession();
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -39,12 +47,43 @@ API.interceptors.request.use(
  */
 API.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      console.warn("Session expired. Redirecting to login...");
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      const session = getSession();
+
+      if (session.refreshToken) {
+        originalRequest._retry = true;
+
+        try {
+          const refreshResponse = await REFRESH_CLIENT.post("/auth/refresh", {
+            refreshToken: session.refreshToken,
+          });
+          const payload = refreshResponse.data?.data;
+
+          saveSession({
+            userId: payload.userId,
+            accessToken: payload.accessToken,
+            refreshToken: payload.refreshToken,
+            email: payload.email,
+            role: payload.role,
+          });
+
+          originalRequest.headers.Authorization = `Bearer ${payload.accessToken}`;
+          return API(originalRequest);
+        } catch {
+          clearSession();
+        }
+      } else {
+        clearSession();
+      }
+
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
 
     return Promise.reject(error);

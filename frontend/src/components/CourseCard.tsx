@@ -1,10 +1,13 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface Course {
   id: string | number;
   title: string;
   description: string;
+  topicCount?: number;
+  subtopicCount?: number;
 }
 
 interface CourseCardProps {
@@ -12,65 +15,41 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
-
-  /**
-   * Memoize truncated description
-   * Prevent recalculation on re-renders
-   */
-  const shortDescription = useMemo(() => {
-    if (!course.description) return "";
-    return course.description.length > 120
-      ? course.description.slice(0, 120) + "..."
-      : course.description;
-  }, [course.description]);
-
   return (
-    <div
-      className="
-        group
-        bg-white/5
-        border border-white/10
-        backdrop-blur-xl
-        rounded-2xl
-        p-6
-        transition-all duration-300
-        hover:shadow-2xl
-        hover:scale-[1.02]
-        flex flex-col justify-between
-      "
+    <motion.article
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.25 }}
+      className="card-tilt workspace-card flex h-full flex-col justify-between rounded-[30px] p-6"
     >
-      {/* Course Title */}
-      <h2 className="text-lg font-semibold text-white group-hover:text-purple-400 transition">
-        {course.title}
-      </h2>
+      <div>
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="workspace-pill inline-flex rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.25em]">
+            Course
+          </div>
+          <div className="text-right text-xs workspace-muted">
+            <div>{course.topicCount ?? 0} topics</div>
+            <div>{course.subtopicCount ?? 0} lessons</div>
+          </div>
+        </div>
 
-      {/* Description */}
-      <p className="text-sm text-gray-400 mt-2">
-        {shortDescription}
-      </p>
+        <h2 className="display-font text-4xl leading-none tracking-[-0.04em] text-[var(--workspace-text)]">{course.title}</h2>
+        <p className="mt-4 line-clamp-4 text-sm leading-7 workspace-muted">
+          {course.description}
+        </p>
+      </div>
 
-      {/* Action */}
-      <Link
-        to={`/courses/${course.id}`}
-        className="
-          mt-5
-          inline-block
-          bg-gradient-to-r
-          from-indigo-500
-          to-purple-600
-          px-4 py-2
-          rounded-lg
-          text-sm
-          font-medium
-          text-white
-          hover:opacity-90
-          transition
-          w-fit
-        "
-      >
-        View Course
-      </Link>
-    </div>
+      <div className="mt-8 flex items-center justify-between">
+        <div className="text-xs uppercase tracking-[0.25em] text-[var(--workspace-cyan)]">
+          Structured learning
+        </div>
+        <Link
+          to={`/courses/${course.id}`}
+          className="rounded-full bg-[var(--workspace-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:scale-[1.02]"
+        >
+          Explore
+        </Link>
+      </div>
+    </motion.article>
   );
 };
 

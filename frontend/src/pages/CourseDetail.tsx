@@ -1,28 +1,48 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getCourseById } from "../services/courseService";
-import { markLessonComplete } from "../services/progressService";
-import { getCourseReviews, addCourseReview } from "../services/reviewService";
+import { getCourseProgress, markLessonComplete, resetCourseProgress } from "../services/progressService";
+import { addCourseReview, getCourseReviews } from "../services/reviewService";
+import { getSession } from "../services/sessionService";
 
 interface Subtopic {
-  id: string | number;
+  id: string;
   title: string;
+  content?: string;
 }
 
 interface Topic {
-  id: string | number;
+  id: string;
   title: string;
   subtopics: Subtopic[];
 }
 
 interface Course {
-  id: string | number;
+  id: string;
   title: string;
+  description: string;
   topics: Topic[];
 }
 
+interface ProgressSubtopic {
+  subtopicId: string;
+  completed: boolean;
+}
+
+interface ProgressResponse {
+  completionPercentage: number;
+  completedSubtopics: number;
+  totalSubtopics: number;
+  topics: Array<{
+    topicId: string;
+    completedSubtopics: number;
+    totalSubtopics: number;
+    subtopics: ProgressSubtopic[];
+  }>;
+}
+
 interface Review {
-  id: string | number;
+  id: number;
   rating: number;
   comment: string;
   userEmail?: string;
@@ -30,245 +50,212 @@ interface Review {
 
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-
+  const session = getSession();
   const [course, setCourse] = useState<Course | null>(null);
+  const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [comment, setComment] = useState("");
+  const [rating, setRating] = useState(5);
 
-  const [rating, setRating] = useState<number>(5);
-  const [comment, setComment] = useState<string>("");
+  const loadCourseData = async () => {
+    if (!id) return;
 
-  /**
-   * Fetch course
-   */
+    const requests = [getCourseById(id), getCourseReviews(id)];
+    if (session.userId) {
+      requests.push(getCourseProgress(session.userId, id));
+    }
+
+    const [courseResponse, reviewResponse, progressResponse] = await Promise.all(requests as any);
+    setCourse(courseResponse.data?.data ?? null);
+    setReviews(reviewResponse.data?.data ?? []);
+    setProgress(progressResponse?.data?.data ?? null);
+  };
+
   useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        if (!id) return;
-
-        const res = await getCourseById(id);
-
-        // FIX: backend returns { success, data, message }
-        setCourse(res.data?.data || null);
-
-      } catch (error) {
-        console.error("Failed to fetch course", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourse();
+    loadCourseData()
+      .catch(() => setMessage("Could not load course data."))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  /**
-   * Fetch reviews
-   */
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        if (!id) return;
+  const completionBySubtopic = useMemo(() => {
+    const lookup = new Set<string>();
+    progress?.topics.forEach((topic) => {
+      topic.subtopics.forEach((subtopic) => {
+        if (subtopic.completed) lookup.add(subtopic.subtopicId);
+      });
+    });
+    return lookup;
+  }, [progress]);
 
-        const res = await getCourseReviews(id);
-
-        setReviews(res.data?.data || []);
-
-      } catch (error) {
-        console.error("Failed to fetch reviews", error);
-      }
-    };
-
-    fetchReviews();
-  }, [id]);
-
-  /**
-   * Mark lesson complete
-   */
-  const handleComplete = useCallback(async (lessonId: string | number) => {
+  const handleComplete = async (subtopicId: string) => {
     try {
-      await markLessonComplete(lessonId);
-      alert("Lesson marked complete ✅");
-    } catch (error) {
-      console.error("Failed to mark lesson complete", error);
+      await markLessonComplete(subtopicId);
+      await loadCourseData();
+      setMessage("Subtopic marked as complete.");
+    } catch (err: any) {
+      setMessage(err?.response?.data?.message ?? "Unable to update progress.");
     }
-  }, []);
+  };
 
-  /**
-   * Submit review
-   */
-  const handleReviewSubmit = useCallback(async () => {
-    try {
-      if (!id) return;
+  const handleReset = async () => {
+    if (!session.userId || !id) return;
+    await resetCourseProgress(session.userId, id);
+    await loadCourseData();
+    setMessage("Course progress reset.");
+  };
 
-      await addCourseReview(id, rating, comment);
-
-      const res = await getCourseReviews(id);
-
-      setReviews(res.data?.data || []);
-
-      setComment("");
-      setRating(5);
-
-    } catch (error) {
-      console.error("Failed to submit review", error);
-    }
-  }, [id, rating, comment]);
-
-  /**
-   * Render topics and lessons
-   */
-  const topicSections = useMemo(() => {
-    if (!course || !course.topics) return null;
-
-    return course.topics.map((topic) => (
-      <div key={topic.id} className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">
-          {topic.title}
-        </h2>
-
-        <div className="space-y-3">
-          {(topic.subtopics || []).map((sub) => (
-            <div
-              key={sub.id}
-              className="
-                flex items-center justify-between
-                bg-white/5
-                backdrop-blur-lg
-                border border-white/10
-                p-4
-                rounded-xl
-                transition
-                hover:border-indigo-500
-              "
-            >
-              <span className="text-sm">
-                {sub.title}
-              </span>
-
-              <button
-                onClick={() => handleComplete(sub.id)}
-                className="text-green-400 text-sm hover:text-green-300 transition"
-              >
-                Mark Complete
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    ));
-  }, [course, handleComplete]);
+  const handleReview = async () => {
+    if (!id) return;
+    await addCourseReview(id, rating, comment);
+    setComment("");
+    setRating(5);
+    await loadCourseData();
+    setMessage("Review submitted.");
+  };
 
   if (loading) {
-    return (
-      <div className="text-center py-20 text-gray-400">
-        Loading course...
-      </div>
-    );
+    return <div className="workspace-card rounded-[28px] px-6 py-10 text-sm uppercase tracking-[0.28em] text-[var(--workspace-primary)]">Loading course detail</div>;
   }
 
   if (!course) {
-    return (
-      <div className="text-center py-20 text-red-400">
-        Course not found.
-      </div>
-    );
+    return <div className="workspace-card rounded-[28px] p-8 text-sm workspace-muted">Course not found.</div>;
   }
 
   return (
-    <div className="space-y-10">
-
-      {/* Course Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-xl">
-        <h1 className="text-3xl font-bold mb-2">
-          {course.title}
-        </h1>
-
-        <p className="text-white/80">
-          Complete lessons and track your progress.
-        </p>
-      </div>
-
-      {/* Topics */}
-      <div>
-        {topicSections}
-      </div>
-
-      {/* Reviews Section */}
-      <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6">
-
-        <h2 className="text-2xl font-semibold mb-4">
-          Course Reviews
-        </h2>
-
-        {/* Review Form */}
-        <div className="mb-6 space-y-3">
-
-          <select
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-            className="bg-black/30 border border-white/10 p-2 rounded-lg"
-          >
-            {[5,4,3,2,1].map((r) => (
-              <option key={r} value={r}>
-                {r} ⭐
-              </option>
-            ))}
-          </select>
-
-          <textarea
-            placeholder="Write your review..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="w-full bg-black/30 border border-white/10 p-3 rounded-lg"
-          />
-
-          <button
-            onClick={handleReviewSubmit}
-            className="bg-indigo-600 px-4 py-2 rounded-lg hover:opacity-90"
-          >
-            Submit Review
-          </button>
-
+    <div className="space-y-8">
+      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="workspace-card rounded-[38px] p-8">
+          <div className="text-xs uppercase tracking-[0.3em] text-[var(--workspace-primary)]">Course detail</div>
+          <h1 className="display-font mt-4 text-6xl leading-none tracking-[-0.04em] text-[var(--workspace-text)]">{course.title}</h1>
+          <p className="mt-5 max-w-3xl text-sm leading-8 workspace-muted">{course.description}</p>
+          {message && <div className="mt-5 rounded-[20px] border border-[var(--workspace-line)] bg-white px-4 py-3 text-sm workspace-muted">{message}</div>}
         </div>
 
-        {/* Reviews */}
-        <div className="space-y-4">
-
-          {reviews.length === 0 && (
-            <p className="text-gray-400">
-              No reviews yet.
+        <div className="grid gap-4">
+          <div className="workspace-card rounded-[28px] p-6">
+            <div className="text-xs uppercase tracking-[0.28em] text-[var(--workspace-cyan)]">Completion</div>
+            <div className="mt-4 display-font text-5xl leading-none text-[var(--workspace-text)]">
+              {Math.round(progress?.completionPercentage ?? 0)}%
+            </div>
+            <p className="mt-3 text-sm workspace-muted">
+              {progress?.completedSubtopics ?? 0} of {progress?.totalSubtopics ?? course.topics.reduce((total, topic) => total + topic.subtopics.length, 0)} lessons complete
             </p>
-          )}
+          </div>
+          <button
+            type="button"
+            onClick={handleReset}
+            className="rounded-full border border-[var(--workspace-line)] bg-white px-5 py-4 text-sm uppercase tracking-[0.22em] workspace-muted transition hover:border-[var(--workspace-primary)]/25"
+          >
+            Reset progress
+          </button>
+        </div>
+      </section>
 
-          {reviews.map((review) => (
-            <div
-              key={review.id}
-              className="bg-black/30 border border-white/10 p-4 rounded-lg"
-            >
-
-              <div className="flex justify-between mb-2">
-
-                <span className="text-yellow-400">
-                  {"⭐".repeat(review.rating)}
-                </span>
-
-                <span className="text-gray-400 text-sm">
-                  {review.userEmail || "Student"}
-                </span>
-
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="space-y-5">
+          {course.topics.map((topic) => (
+            <article key={topic.id} className="workspace-card rounded-[30px] p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.28em] text-[var(--workspace-primary)]">Topic</div>
+                  <h2 className="mt-3 text-2xl text-[var(--workspace-text)]">{topic.title}</h2>
+                </div>
+                <div className="rounded-full border border-[var(--workspace-line)] bg-white px-4 py-2 text-xs uppercase tracking-[0.22em] workspace-muted">
+                  {topic.subtopics.length} lessons
+                </div>
               </div>
 
-              <p className="text-gray-300 text-sm">
-                {review.comment}
-              </p>
+              <div className="mt-5 space-y-3">
+                {topic.subtopics.map((subtopic) => {
+                  const completed = completionBySubtopic.has(subtopic.id);
 
-            </div>
+                  return (
+                    <div
+                      key={subtopic.id}
+                      className="flex flex-col gap-4 rounded-[24px] border border-[var(--workspace-line)] bg-white p-5 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <h3 className="text-lg text-[var(--workspace-text)]">{subtopic.title}</h3>
+                        {subtopic.content && (
+                          <p className="mt-2 text-sm leading-7 workspace-muted">{subtopic.content}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={completed}
+                        onClick={() => handleComplete(subtopic.id)}
+                        className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] transition ${
+                          completed
+                            ? "bg-[var(--workspace-cyan)] text-[var(--workspace-text)]"
+                            : "bg-[var(--workspace-primary)] text-white hover:scale-[1.02]"
+                        }`}
+                      >
+                        {completed ? "Completed" : "Mark complete"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
           ))}
-
         </div>
 
-      </div>
+        <div className="space-y-5">
+          <section className="workspace-card rounded-[30px] p-6">
+            <div className="text-xs uppercase tracking-[0.28em] text-[var(--workspace-primary)]">Write a review</div>
+            <div className="mt-5 space-y-4">
+              <select
+                value={rating}
+                onChange={(event) => setRating(Number(event.target.value))}
+                className="w-full rounded-[18px] border border-[var(--workspace-line)] bg-white px-4 py-3 text-sm text-[var(--workspace-text)]"
+              >
+                {[5, 4, 3, 2, 1].map((value) => (
+                  <option key={value} value={value}>
+                    {value} stars
+                  </option>
+                ))}
+              </select>
+              <textarea
+                value={comment}
+                onChange={(event) => setComment(event.target.value)}
+                rows={5}
+                placeholder="Share the learning experience"
+                className="w-full rounded-[18px] border border-[var(--workspace-line)] bg-white px-4 py-3 text-sm text-[var(--workspace-text)] outline-none placeholder:text-[var(--workspace-muted)]"
+              />
+              <button
+                type="button"
+                onClick={handleReview}
+                className="rounded-full bg-[var(--workspace-primary)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.22em] text-white"
+              >
+                Submit review
+              </button>
+            </div>
+          </section>
 
+          <section className="workspace-card rounded-[30px] p-6">
+            <div className="text-xs uppercase tracking-[0.28em] text-[var(--workspace-primary)]">Student feedback</div>
+            <div className="mt-5 space-y-4">
+              {reviews.length === 0 ? (
+                <div className="rounded-[22px] border border-[var(--workspace-line)] bg-white p-4 text-sm workspace-muted">
+                  No reviews yet.
+                </div>
+              ) : (
+                reviews.map((review) => (
+                  <div key={review.id} className="rounded-[22px] border border-[var(--workspace-line)] bg-white p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="text-sm uppercase tracking-[0.2em] text-[var(--workspace-cyan)]">{review.rating} / 5</div>
+                      <div className="text-xs workspace-muted">{review.userEmail ?? "Learner"}</div>
+                    </div>
+                    <p className="mt-3 text-sm leading-7 workspace-muted">{review.comment}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      </section>
     </div>
   );
 };

@@ -1,5 +1,174 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Cormorant+Garamond:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
-html, body, #root {
-  height: 100%;
+:root {
+  color-scheme: light;
+  --bg: #090909;
+  --bg-soft: #131313;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panel-strong: rgba(255, 255, 255, 0.1);
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #f8f3ea;
+  --muted: #b6ab9d;
+  --accent: #ff8a2a;
+  --accent-soft: #ffd2ad;
+  --teal: #9ee7d7;
+  --workspace-bg: #eef1f7;
+  --workspace-panel: rgba(255, 255, 255, 0.9);
+  --workspace-line: rgba(113, 122, 157, 0.16);
+  --workspace-text: #1f2540;
+  --workspace-muted: #7780a1;
+  --workspace-primary: #5f6fff;
+  --workspace-violet: #8467ff;
+  --workspace-coral: #ff8f70;
+  --workspace-cyan: #6bd2ff;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 138, 42, 0.18), transparent 28%),
+    radial-gradient(circle at 80% 0%, rgba(158, 231, 215, 0.08), transparent 22%),
+    linear-gradient(180deg, #060606 0%, #0b0b0c 45%, #111111 100%);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.display-font {
+  font-family: "Cormorant Garamond", serif;
+}
+
+.glass-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(20px);
+}
+
+.ambient-grid {
+  position: relative;
+}
+
+.ambient-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 85%);
+  pointer-events: none;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(2px);
+  background: radial-gradient(circle at 30% 30%, #ffd9bb, #ff8a2a 45%, #6d2d00 100%);
+  box-shadow: inset -24px -20px 40px rgba(0, 0, 0, 0.18), 0 20px 80px rgba(255, 138, 42, 0.24);
+}
+
+.card-tilt {
+  transform-style: preserve-3d;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.card-tilt:hover {
+  transform: perspective(1200px) rotateX(6deg) rotateY(-8deg) translateY(-4px);
+  border-color: rgba(255, 210, 173, 0.4);
+}
+
+.section-title {
+  font-size: clamp(2.8rem, 7vw, 6.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.section-subtitle {
+  color: var(--muted);
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.75;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(95, 111, 255, 0.14), transparent 22%),
+    radial-gradient(circle at 85% 10%, rgba(255, 143, 112, 0.12), transparent 18%),
+    linear-gradient(180deg, #f6f8fc 0%, #eef1f7 100%);
+  color: var(--workspace-text);
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.workspace-card {
+  background: var(--workspace-panel);
+  border: 1px solid var(--workspace-line);
+  box-shadow: 0 28px 60px rgba(28, 40, 75, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.workspace-pill {
+  border: 1px solid rgba(95, 111, 255, 0.12);
+  background: rgba(95, 111, 255, 0.08);
+  color: var(--workspace-primary);
+}
+
+.workspace-muted {
+  color: var(--workspace-muted);
+}
+
+.workspace-gradient {
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.28), transparent 35%),
+    linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-violet) 52%, var(--workspace-coral) 100%);
+}
+
+.workspace-grid {
+  position: relative;
+}
+
+.workspace-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(112, 125, 168, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(112, 125, 168, 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.22), transparent 90%);
+  pointer-events: none;
+}
+
+.soft-ring {
+  background:
+    radial-gradient(circle closest-side, white 68%, transparent 70% 100%),
+    conic-gradient(var(--workspace-primary) 0deg 210deg, #d7def6 210deg 360deg);
 }

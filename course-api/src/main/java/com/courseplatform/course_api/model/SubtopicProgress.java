@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "subtopic_progress",
        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "subtopic_id"}))
@@ -24,9 +26,20 @@ public class SubtopicProgress {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "subtopic_id", nullable = false)
+    @JsonIgnore
     private Subtopic subtopic;
+
+    public static SubtopicProgress complete(User user, Subtopic subtopic, Instant completedAt) {
+        return SubtopicProgress.builder()
+                .user(user)
+                .subtopic(subtopic)
+                .completed(true)
+                .completedAt(completedAt)
+                .build();
+    }
 }

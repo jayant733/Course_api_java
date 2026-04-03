@@ -9,5 +9,9 @@ export const getCourseById = (id: string | number) => {
 };
 
 export const searchCourses = (query: string) => {
-  return API.get(`/search?q=${query}`);
+  return API.get(`/search?q=${encodeURIComponent(query)}`);
+};
+
+export const searchCourseCatalog = (keyword: string) => {
+  return API.get(`/courses/search?keyword=${encodeURIComponent(keyword)}`);
 };

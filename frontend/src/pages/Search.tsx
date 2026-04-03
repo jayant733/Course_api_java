@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { searchCourses } from "../services/courseService";
 
-interface Match {
-  type: string;
-  topicTitle: string;
+interface SearchMatch {
   subtopicId: string;
+  topicTitle: string;
   subtopicTitle: string;
   snippet: string;
 }
@@ -13,115 +12,67 @@ interface Match {
 interface SearchResult {
   courseId: string;
   courseTitle: string;
-  matches: Match[];
+  matches: SearchMatch[];
 }
 
 const Search: React.FC = () => {
-
-  const [searchParams] = useSearchParams();
-  const query = searchParams.get("q") || "";
-
+  const [params] = useSearchParams();
+  const query = params.get("q") ?? "";
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
     const fetchResults = async () => {
-
       if (!query) {
         setResults([]);
+        setLoading(false);
         return;
       }
 
       try {
-
-        const res = await searchCourses(query);
-
-        // 🔥 IMPORTANT FIX
-        setResults(res.data?.results || []);
-
-      } catch (error) {
-        console.error("Search failed", error);
+        const response = await searchCourses(query);
+        setResults(response.data?.results ?? []);
       } finally {
         setLoading(false);
       }
-
     };
 
     fetchResults();
-
   }, [query]);
-
-  if (loading) {
-    return (
-      <div className="text-center py-20 text-gray-400">
-        Searching...
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8">
+      <section className="glass-panel rounded-[34px] p-8">
+        <div className="text-xs uppercase tracking-[0.3em] text-[var(--accent-soft)]">Search results</div>
+        <h1 className="display-font mt-4 text-6xl leading-none tracking-[-0.04em]">Query: {query || "No search term"}</h1>
+      </section>
 
-      <h1 className="text-2xl font-semibold">
-        Search Results for "{query}"
-      </h1>
-
-      {results.length === 0 ? (
-
-        <div className="bg-white/5 border border-white/10 p-6 rounded-xl text-gray-400">
-          No courses found.
+      {loading ? (
+        <div className="glass-panel rounded-[28px] px-6 py-10 text-sm uppercase tracking-[0.28em] text-[var(--accent-soft)]">Searching across courses</div>
+      ) : results.length === 0 ? (
+        <div className="glass-panel rounded-[28px] p-8 text-sm text-[var(--muted)]">
+          No grouped course matches found for this query.
         </div>
-
       ) : (
-
-        <div className="space-y-6">
-
+        <section className="space-y-5">
           {results.map((course) => (
-
-            <div
-              key={course.courseId}
-              className="bg-white/5 border border-white/10 p-6 rounded-xl"
-            >
-
-              <Link
-                to={`/courses/${course.courseId}`}
-                className="text-lg font-semibold text-indigo-400"
-              >
+            <article key={course.courseId} className="glass-panel rounded-[30px] p-6">
+              <Link to={`/courses/${course.courseId}`} className="display-font text-4xl leading-none text-white">
                 {course.courseTitle}
               </Link>
-
-              <div className="mt-4 space-y-3">
-
+              <div className="mt-6 grid gap-4 lg:grid-cols-2">
                 {course.matches.map((match) => (
-
-                  <div
-                    key={match.subtopicId}
-                    className="bg-black/30 p-3 rounded-lg"
-                  >
-
-                    <div className="text-sm text-gray-300">
-                      <b>{match.topicTitle}</b> → {match.subtopicTitle}
-                    </div>
-
-                    <p className="text-xs text-gray-400 mt-1">
-                      {match.snippet}
-                    </p>
-
+                  <div key={match.subtopicId} className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
+                    <div className="text-xs uppercase tracking-[0.28em] text-[var(--teal)]">{match.topicTitle}</div>
+                    <h3 className="mt-3 text-lg">{match.subtopicTitle}</h3>
+                    <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{match.snippet}</p>
                   </div>
-
                 ))}
-
               </div>
-
-            </div>
-
+            </article>
           ))}
-
-        </div>
-
+        </section>
       )}
-
     </div>
   );
 };

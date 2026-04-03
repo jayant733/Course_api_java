@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +35,7 @@ public class Subtopic {
     private Topic topic;
 
     @OneToMany(mappedBy = "subtopic", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<SubtopicProgress> progressRecords = new ArrayList<>();
 
     protected Subtopic() {

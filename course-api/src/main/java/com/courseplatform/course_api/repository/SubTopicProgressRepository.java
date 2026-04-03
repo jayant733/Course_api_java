@@ -12,4 +12,5 @@ import com.courseplatform.course_api.model.User;
 public interface SubTopicProgressRepository extends JpaRepository<SubtopicProgress, Long> {
     Optional<SubtopicProgress> findByUserAndSubtopic(User user, Subtopic subtopic);
     List<SubtopicProgress> findByUser(User user);
+    void deleteByUserAndSubtopic_Topic_Course(User user, com.courseplatform.course_api.model.Course course);
 }

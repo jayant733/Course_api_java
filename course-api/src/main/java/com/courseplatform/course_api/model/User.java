@@ -33,6 +33,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Role role;
 
+    @Column
+private String phoneNumber;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Enrollment> enrollments = new ArrayList<>();
 
@@ -41,19 +44,20 @@ public class User extends BaseEntity {
 
     protected User() {}
 
-    private User(String email, String password, Role role) {
-        this.email = Objects.requireNonNull(email);
-        this.password = Objects.requireNonNull(password);
-        this.role = role;
-    }
+    private User(String email, String password, Role role, String phoneNumber) {
+    this.email = Objects.requireNonNull(email);
+    this.password = Objects.requireNonNull(password);
+    this.role = role;
+    this.phoneNumber = phoneNumber;
+}
 
     public static User createUser(String email, String encodedPassword) {
-        return new User(email, encodedPassword, Role.ROLE_USER);
-    }
+    return new User(email, encodedPassword, Role.ROLE_USER, null);
+}
 
-    public static User createAdmin(String email, String encodedPassword) {
-        return new User(email, encodedPassword, Role.ROLE_ADMIN);
-    }
+public static User createAdmin(String email, String encodedPassword, String phoneNumber) {
+    return new User(email, encodedPassword, Role.ROLE_ADMIN, phoneNumber);
+}
 
     public Long getId() { return id; }
     public String getEmail() { return email; }
@@ -62,6 +66,20 @@ public class User extends BaseEntity {
 
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public String getPhoneNumber() {
+    return phoneNumber;
+}
+
+    public void updateProfile(String email, String phoneNumber) {
+        if (email != null && !email.isBlank()) {
+            this.email = email.trim().toLowerCase();
+        }
+
+        this.phoneNumber = phoneNumber == null || phoneNumber.isBlank()
+                ? null
+                : phoneNumber.trim();
     }
 
     public void softDelete() {

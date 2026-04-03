@@ -14,6 +14,8 @@ public interface CourseService {
 
     List<CourseSummaryResponse> searchCourses(String keyword);
 
+    List<CourseSummaryResponse> searchCatalog(String keyword, String topic);
+
     String createCourse(AdminCreateCourseRequest request);
 
     void updateCourse(String id, AdminCreateCourseRequest request);

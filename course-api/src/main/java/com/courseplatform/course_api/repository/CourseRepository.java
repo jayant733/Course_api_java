@@ -52,4 +52,14 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     List<Course> findByTitleContainingIgnoreCase(String keyword);
 
     Page<Course> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
+
+    @Query("""
+        SELECT DISTINCT c
+        FROM Course c
+        LEFT JOIN c.topics t
+        WHERE c.deleted = false
+          AND (:keyword IS NULL OR LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+          AND (:topic IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :topic, '%')))
+    """)
+    List<Course> searchCatalog(String keyword, String topic);
 }
