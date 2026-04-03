@@ -9,14 +9,14 @@ import { clearSession, getSession, saveSession } from "../services/sessionServic
  * Axios instance
  */
 const API: AxiosInstance = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: import.meta.env.VITE_API_URL + "/api",
   headers: {
     "Content-Type": "application/json"
   }
 });
 
 const REFRESH_CLIENT = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: import.meta.env.VITE_API_URL + "/api",
   headers: {
     "Content-Type": "application/json"
   }
