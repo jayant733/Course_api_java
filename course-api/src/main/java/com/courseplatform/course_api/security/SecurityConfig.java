@@ -18,26 +18,16 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
-@RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final List<String> allowedOriginPatterns;
+    @Value("${app.cors.allowed-origin-patterns:http://localhost:5173,https://course-api-java.vercel.app,https://*.vercel.app}")
+    private String allowedOriginPatternsProperty;
 
-    public SecurityConfig(
-            JwtAuthFilter jwtAuthFilter,
-            @Value("${app.cors.allowed-origin-patterns:http://localhost:5173,https://course-api-java.vercel.app,https://*.vercel.app}")
-            String allowedOriginPatternsProperty) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
-        this.allowedOriginPatterns = List.of(allowedOriginPatternsProperty.split(","))
-                .stream()
-                .map(String::trim)
-                .filter(value -> !value.isBlank())
-                .collect(Collectors.toList());
     }
 
     @Bean
@@ -49,7 +39,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(allowedOriginPatterns);
+        config.setAllowedOriginPatterns(List.of(allowedOriginPatternsProperty.split(",")).
+                stream()
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .collect(Collectors.toList()));
 
         config.setAllowedMethods(List.of(
             "GET", "POST", "PUT", "DELETE", "OPTIONS"
