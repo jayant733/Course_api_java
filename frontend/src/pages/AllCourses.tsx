@@ -62,7 +62,7 @@ const AllCourses: React.FC = () => {
           <div className="text-xs uppercase tracking-[0.3em] text-[var(--workspace-primary)]">Course catalog</div>
           <h1 className="display-font mt-4 text-6xl leading-none tracking-[-0.04em] text-[var(--workspace-text)]">Browse the learning map.</h1>
           <p className="mt-4 max-w-2xl text-sm leading-8 workspace-muted">
-            The PDF calls for course catalog and detail pages, protected routes, and clean UX. This screen pairs that baseline with motion, bento composition, and stronger visual hierarchy.
+            Explore a structured course catalog with protected routes, richer discovery, and a cleaner visual hierarchy shaped like a polished product surface.
           </p>
         </div>
 

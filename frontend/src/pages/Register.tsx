@@ -56,7 +56,7 @@ const Register: React.FC = () => {
   return (
     <AuthLayout
       title="Create account"
-      subtitle="Set up a learner or admin identity and move directly into the assignment-ready product flow."
+      subtitle="Set up a learner or admin identity and move directly into the full platform experience."
       footer={
         <>
           Already registered?{" "}

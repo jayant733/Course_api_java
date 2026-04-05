@@ -114,7 +114,7 @@ const Header: React.FC = () => {
             className="mx-auto mb-4 max-w-[1440px] px-4 sm:px-6 lg:px-10"
           >
             <div className="workspace-card rounded-[28px] px-5 py-4 text-sm leading-7 text-[var(--workspace-muted)]">
-              Cleaner dashboard palette, motion-driven widgets, and assignment-aligned API flows are now being surfaced inside the workspace.
+              Cleaner dashboard palette, motion-driven widgets, and fully integrated platform flows are now surfaced inside the workspace.
             </div>
           </motion.div>
         )}

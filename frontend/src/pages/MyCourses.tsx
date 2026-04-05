@@ -44,7 +44,7 @@ const MyCourses: React.FC = () => {
         <div className="text-xs uppercase tracking-[0.3em] text-[var(--workspace-primary)]">Learner dashboard</div>
         <h1 className="display-font mt-4 text-6xl leading-none tracking-[-0.04em] text-[var(--workspace-text)]">Your active learning queue.</h1>
         <p className="mt-4 max-w-2xl text-sm leading-8 workspace-muted">
-          This screen maps directly to the PDF’s enrolled courses dashboard flow and adds a cleaner continue or unenroll experience.
+          Track active enrollments, continue learning quickly, and manage your course queue through a cleaner, more product-ready learner workspace.
         </p>
       </section>
 

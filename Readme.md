@@ -1,8 +1,8 @@
-# 📚 Course Platform API — Spring Boot Backend Assignment
+# 📚 EduSphere — Full-Stack Course Platform
 
-This project is a **production-style backend API** built as part of the Spring Boot Backend Internship Assignment.
+EduSphere is a **production-grade full-stack learning platform** built with Spring Boot and React.
 
-It demonstrates secure REST API design, role-based access control, JWT authentication, database integration, and deployment readiness.
+It showcases secure REST API design, role-based access control, JWT authentication, course delivery workflows, database integration, and deployment-ready architecture.
 
 🔗 **Live API:** https://your-deployed-link-here  
 🔗 **Swagger Docs:** https://your-deployed-link-here/swagger-ui.html
@@ -98,38 +98,30 @@ http://localhost:8080/swagger-ui.html
 ```bash 
 docker-compose up --build
 ``` 
-Deployment
+## 🚀 Deployment
 
-The application is deployed on Render using:
+The application is deployed with:
 
-Managed PostgreSQL Database
+- Managed PostgreSQL on Render
+- Environment-based database and JWT configuration
+- Production-ready application settings for cloud hosting
 
-Environment variables for DB & JWT
+## 🧪 Testing Strategy
 
-Production-ready configuration
+- Validation errors return structured responses
+- Authentication and role restrictions are testable through Swagger
+- Edge cases are handled with custom exceptions and consistent status codes
 
-🧪 Testing Strategy
+## 💡 Product Approach
 
-Validation errors return structured responses
+This project was shaped as a real platform rather than a basic CRUD exercise. Security, clean service boundaries, scalable API design, and deployability were treated as first-class concerns.
 
-Authentication & role restrictions tested via Swagger
+### Key Decisions
 
-Edge cases handled with custom exceptions
-
-💡 Notes on Approach
-
-I focused on building a real-world backend architecture rather than just CRUD APIs.
-Security, clean error handling, scalable structure, and deployability were prioritized.
-
-Key Decisions
-
-JWT over sessions for scalability
-
-Role inside token for efficient authorization
-
-DTOs to avoid entity exposure
-
-Global exception handler for consistent API responses
+- JWT over server sessions for stateless scalability
+- Role claims inside the token for efficient authorization checks
+- DTOs to avoid direct entity exposure
+- Global exception handling for consistent API responses
 
 📸 API Screenshots
 
@@ -138,7 +130,7 @@ Global exception handler for consistent API responses
 
 ![API Response](course-api/screenshots/image-1.png)
 
-👨‍💻 Author
+## 👨‍💻 Author
 
-Jayant Sharma
+Jayant Sharma  
 Backend Developer (Spring Boot)

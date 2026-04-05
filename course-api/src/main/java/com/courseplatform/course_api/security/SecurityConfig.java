@@ -1,7 +1,9 @@
 package com.courseplatform.course_api.security;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,6 +26,19 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final List<String> allowedOriginPatterns;
+
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            @Value("${app.cors.allowed-origin-patterns:http://localhost:5173,https://course-api-java.vercel.app,https://*.vercel.app}")
+            String allowedOriginPatternsProperty) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.allowedOriginPatterns = List.of(allowedOriginPatternsProperty.split(","))
+                .stream()
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .collect(Collectors.toList());
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -34,17 +49,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-            "http://localhost:5173",
-            "https://course-api-java.vercel.app"
-        ));
+        config.setAllowedOriginPatterns(allowedOriginPatterns);
 
         config.setAllowedMethods(List.of(
             "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
 
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type",
+            "X-Requested-With",
+            "Accept",
+            "Origin"
+        ));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();

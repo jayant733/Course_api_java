@@ -332,7 +332,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-xs uppercase tracking-[0.26em] workspace-muted">System lane</div>
-                    <h2 className="mt-2 text-2xl font-semibold text-[var(--workspace-text)]">Assignment engines</h2>
+                    <h2 className="mt-2 text-2xl font-semibold text-[var(--workspace-text)]">Experience engines</h2>
                   </div>
                   <Cpu className="text-[var(--workspace-violet)]" size={20} />
                 </div>

@@ -56,7 +56,7 @@ const AccountSettings: React.FC = () => {
         <div className="text-xs uppercase tracking-[0.3em] text-[var(--workspace-primary)]">Account settings</div>
         <h1 className="mt-4 text-5xl font-semibold text-[var(--workspace-text)]">Manage your profile and security.</h1>
         <p className="mt-4 max-w-2xl text-sm leading-8 workspace-muted">
-          This adds the missing frontend screens for profile update and account deletion from the backend assignment.
+          Manage identity, profile details, and account security from a dedicated settings surface connected directly to the platform APIs.
         </p>
       </section>
 
