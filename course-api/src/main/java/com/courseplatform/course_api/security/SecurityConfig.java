@@ -17,6 +17,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableMethodSecurity
@@ -41,10 +43,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-
+    private List<String> resolveAllowedOriginPatterns() {
         List<String> configuredPatterns = List.of((allowedOriginPatternsProperty == null ? "" : allowedOriginPatternsProperty).split(","))
                 .stream()
                 .map(String::trim)
@@ -52,29 +51,40 @@ public class SecurityConfig {
                 .collect(Collectors.toList());
 
         if (configuredPatterns.isEmpty()) {
-            configuredPatterns = DEFAULT_ALLOWED_ORIGIN_PATTERNS;
-        } else {
-            configuredPatterns = java.util.stream.Stream.concat(
-                    DEFAULT_ALLOWED_ORIGIN_PATTERNS.stream(),
-                    configuredPatterns.stream()
-            ).distinct().collect(Collectors.toList());
+            return DEFAULT_ALLOWED_ORIGIN_PATTERNS;
         }
 
-        config.setAllowedOriginPatterns(configuredPatterns);
+        return java.util.stream.Stream.concat(
+                DEFAULT_ALLOWED_ORIGIN_PATTERNS.stream(),
+                configuredPatterns.stream()
+        ).distinct().collect(Collectors.toList());
+    }
 
-        config.setAllowedMethods(List.of(
-            "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        List<String> allowedOriginPatterns = resolveAllowedOriginPatterns();
 
-        config.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type",
-            "X-Requested-With",
-            "Accept",
-            "Origin"
-        ));
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOriginPatterns(allowedOriginPatterns.toArray(String[]::new))
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .exposedHeaders("Authorization")
+                        .maxAge(3600);
+            }
+        };
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(resolveAllowedOriginPatterns());
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false);
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
