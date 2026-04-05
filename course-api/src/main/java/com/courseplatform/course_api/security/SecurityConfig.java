@@ -22,6 +22,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final List<String> DEFAULT_ALLOWED_ORIGIN_PATTERNS = List.of(
+            "http://localhost:5173",
+            "https://course-api-java.vercel.app",
+            "https://*.vercel.app"
+    );
+
     private final JwtAuthFilter jwtAuthFilter;
     @Value("${app.cors.allowed-origin-patterns:http://localhost:5173,https://course-api-java.vercel.app,https://*.vercel.app}")
     private String allowedOriginPatternsProperty;
@@ -39,11 +45,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of(allowedOriginPatternsProperty.split(",")).
-                stream()
+        List<String> configuredPatterns = List.of((allowedOriginPatternsProperty == null ? "" : allowedOriginPatternsProperty).split(","))
+                .stream()
                 .map(String::trim)
                 .filter(value -> !value.isBlank())
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+
+        if (configuredPatterns.isEmpty()) {
+            configuredPatterns = DEFAULT_ALLOWED_ORIGIN_PATTERNS;
+        } else {
+            configuredPatterns = java.util.stream.Stream.concat(
+                    DEFAULT_ALLOWED_ORIGIN_PATTERNS.stream(),
+                    configuredPatterns.stream()
+            ).distinct().collect(Collectors.toList());
+        }
+
+        config.setAllowedOriginPatterns(configuredPatterns);
 
         config.setAllowedMethods(List.of(
             "GET", "POST", "PUT", "DELETE", "OPTIONS"
